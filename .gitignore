@@ -1,10 +1,11 @@
 # compiled output
-/dist
-/node_modules
+dist
+node_modules
 
 # Env files
 .env.stage.dev
 .env.stage.prod
+
 
 # Logs
 logs
