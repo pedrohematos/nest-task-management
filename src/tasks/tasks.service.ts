@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TaskStatus } from './task-status.enum';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
@@ -9,6 +9,8 @@ import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TasksService {
+  private logger = new Logger('TasksService', { timestamp: true });
+
   constructor(
     @InjectRepository(TasksRepository)
     private tasksRepository: TasksRepository,
@@ -22,6 +24,7 @@ export class TasksService {
     const found = await this.tasksRepository.findOne({ where: { id, user } });
 
     if (!found) {
+      this.logger.verbose(`Failed to get task. Task with ID "${id}" not found`);
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
 
@@ -36,6 +39,9 @@ export class TasksService {
     const result = await this.tasksRepository.delete({ id, user });
 
     if (result.affected === 0) {
+      this.logger.verbose(
+        `Failed to delete task. Task with ID "${id}" not found`,
+      );
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
   }

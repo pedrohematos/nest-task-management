@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersRepository } from './users.repository';
 import { AuthSignUpCredentialsDto } from './dto/auth-signup-credentials.dto';
@@ -9,6 +9,8 @@ import { JwtPayload } from './jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger('AuthService', { timestamp: true });
+
   constructor(
     @InjectRepository(UsersRepository)
     private usersRepository: UsersRepository,
@@ -32,6 +34,9 @@ export class AuthService {
       const accessToken: string = await this.jwtService.sign(payload);
       return { accessToken };
     } else {
+      this.logger.verbose(
+        `Failed to sign in user "${username}". User has invalid credentials`,
+      );
       throw new UnauthorizedException('Please check your login credentials');
     }
   }

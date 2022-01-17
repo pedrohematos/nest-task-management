@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -21,6 +22,8 @@ import { GetUser } from 'src/auth/get-user.decorator';
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
+  private logger = new Logger('TasksController', { timestamp: true });
+
   constructor(private tasksService: TasksService) {}
 
   @Get()
@@ -28,11 +31,21 @@ export class TasksController {
     @Query() filterDto: GetTasksFilterDto,
     @GetUser() user: User,
   ): Promise<Task[]> {
+    this.logger.verbose(
+      `User "${user.username}" retrieving all tasks. Filters: ${JSON.stringify(
+        filterDto,
+      )}`,
+    );
     return this.tasksService.getTasks(filterDto, user);
   }
 
   @Get('/:id')
   getTaskById(@Param('id') id: string, @GetUser() user: User): Promise<Task> {
+    this.logger.verbose(
+      `User "${user.username}" retrieving task by id. Task id: ${JSON.stringify(
+        id,
+      )}`,
+    );
     return this.tasksService.getTaskById(id, user);
   }
 
@@ -41,11 +54,19 @@ export class TasksController {
     @Body() createTaskDto: CreateTaskDto,
     @GetUser() user: User,
   ): Promise<Task> {
+    this.logger.verbose(
+      `User "${user.username}" creating a new task. Data: ${JSON.stringify(
+        createTaskDto,
+      )}`,
+    );
     return this.tasksService.createTask(createTaskDto, user);
   }
 
   @Delete('/:id')
   deleteTask(@Param('id') id: string, @GetUser() user: User): Promise<void> {
+    this.logger.verbose(
+      `User "${user.username}" deleting a task. Task id: ${JSON.stringify(id)}`,
+    );
     return this.tasksService.deleteTask(id, user);
   }
 
@@ -55,6 +76,12 @@ export class TasksController {
     @Body() updateTaskStatusDto: UpdateTaskStatusDto,
     @GetUser() user: User,
   ): Promise<Task> {
+    this.logger.verbose(
+      `User "${user.username}" updating a task status. Data: ${JSON.stringify({
+        taskId: id,
+        status: updateTaskStatusDto.status,
+      })}`,
+    );
     const { status } = updateTaskStatusDto;
     return this.tasksService.updateTaskStatus(id, status, user);
   }
